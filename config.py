@@ -1,5 +1,5 @@
-BOT_API_TOKEN = '6381748714:AAHjveZaeYHhS34VBNjJRuqyedAVSLzyhWg'
-ADMINS = [5258820364, 1233502909, 1797349408]
+BOT_API_TOKEN = '6397723058:AAF_ERfz_kRF0YuTm4uyd-5MaKgUwD32XCU'
+ADMINS = []
 
 ALL_USERS = "https://leaque.com/api/user/all/?format=json"
 ALL_TRANSACTIONS = "https://leaque.com/api/transactions/all/?format=json"
