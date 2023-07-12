@@ -1,4 +1,4 @@
-BOT_API_TOKEN = '6397723058:AAF_ERfz_kRF0YuTm4uyd-5MaKgUwD32XCU'
+BOT_API_TOKEN = '6381748714:AAHjveZaeYHhS34VBNjJRuqyedAVSLzyhWg'
 ADMINS = []
 
 ALL_USERS = "https://leaque.com/api/user/all/?format=json"
