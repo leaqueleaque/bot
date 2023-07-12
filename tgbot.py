@@ -16,6 +16,5 @@ async def introduction(message: types.Message):
         " \n\n<em>З цього моменту ви будете сповіщенні про всі дії юзері вашого сервісу!</em>",
         parse_mode="HTML"
                          )
-    print(message.chat.id)
     ADMINS.append(message.chat.id)
 
