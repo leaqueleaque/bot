@@ -32,31 +32,22 @@ async def get_last_index(json_values, value_id):
     for index in range(0, len(json_values)):
         if int(json_values[index]["id"]) == value_id:
             return index
-    return await get_last_index(json_values, value_id - 1)  # if there is no value with this id, go back
+    return await get_last_index(json_values, value_id - 1)  # Если нет значения с этим id, возвращаемся назад
 
 
-async def get_changes(last_id, call, file_name, *value_data_names):
-    json_values = await get(call)  # get all values
-    with open(f"memory/{file_name}", "r+") as last_id_memory:
-        last_id_content = last_id_memory.read()
-        if not last_id:  # if last_id == None
-            if last_id_content:
-                last_id = int(last_id_content)
-                start = await get_last_index(json_values, last_id)
-            else:  # if last_id_content == ""
-                start = -1
-        else:
-            start = await get_last_index(json_values, last_id)
-        end = len(json_values)
-        new_users_data = []  # list of new values
-        if start < end - 1:
-            for index in range(start + 1, end):
-                last_id = int(json_values[index]["id"])
-                new_users_data.append(await get_data(json_values[index], value_data_names))
-            last_id_memory.seek(0)
-            last_id_memory.write(str(last_id))
-    if new_users_data:  # if the list is not empty
-        return new_users_data
+async def get_changes(last_id, call, *value_data_names):
+    json_values = await get(call)  # Получить все значения
+    if not last_id:  # Если last_id == None
+        start = -1
+    else:
+        start = await get_last_index(json_values, last_id)
+    end = len(json_values)
+    new_values_data = []  # Список изменений
+    if start < end - 1:
+        for index in range(start + 1, end):
+            new_values_data.append(await get_data(json_values[index], value_data_names))
+    if new_values_data:  # Если есть изменения
+        return new_values_data
     return 0
 
 
@@ -65,12 +56,6 @@ async def get_value_data(value_id, call, data_name):
     for json_value in json_values:
         if json_value["id"] == value_id:
             return json_value[data_name]
-
-
-async def set_last_id(file_name):
-    with open(f"memory/{file_name}", "r") as last_id_memory:
-        last_id = last_id_memory.read()
-        return int(last_id)
 
 
 async def get_value_data_by_index(index, call, data_name):
@@ -83,16 +68,21 @@ async def send_message_to_admins(message):
         await bot.send_message(ADMIN, message, parse_mode="HTML")
 
 
+async def set_last_id(call):
+    json_values = await get(call)
+    return int(json_values[-1]["id"])
+
+
 async def check_changes():
     while True:
         global last_user_id, last_transaction_id, last_kyc_id, last_used_promocode_id, last_staking_id, last_request_id
         await asyncio.sleep(20)
 
         # USERS
-        all_new_users = await get_changes(last_user_id, ALL_USERS, "last_user_id.txt",
+        all_new_users = await get_changes(last_user_id, ALL_USERS,
                                           "username", "email")
         if all_new_users:
-            last_user_id = await set_last_id("last_user_id.txt")
+            last_user_id = await set_last_id(ALL_USERS)
             for new_user in all_new_users:
                 username, email = new_user
                 mess = (
@@ -103,10 +93,10 @@ async def check_changes():
                 await send_message_to_admins(mess)
 
         # KYC
-        all_new_kyc = await get_changes(last_kyc_id, ALL_KYS, "last_kyc_id.txt", "user", "first_name", "last_name",
+        all_new_kyc = await get_changes(last_kyc_id, ALL_KYS, "user", "first_name", "last_name",
                                         "address", "country", "birth_date", "mobile", "id_type", "id_number")
         if all_new_kyc:
-            last_kyc_id = await set_last_id("last_kyc_id.txt")
+            last_kyc_id = await set_last_id(ALL_KYS)
             for new_kyc in all_new_kyc:
                 user, first_name, last_name, address, country, birth_date, mobile, id_type, id_number = new_kyc
                 email = await get_value_data(user, ALL_USERS, "email")
@@ -122,11 +112,11 @@ async def check_changes():
                 await send_message_to_admins(mess)
 
         # PROMOCODES
-        all_new_promocodes = await get_changes(last_used_promocode_id, ALL_USED_PROMOCODES,
-                                               "last_used_promocode_id.txt", "user", "promocode")
-        if all_new_promocodes:
-            last_used_promocode_id = await set_last_id("last_used_promocode_id.txt")
-            for new_promocode in all_new_promocodes:
+        all_new_used_promocodes = await get_changes(last_used_promocode_id, ALL_USED_PROMOCODES,
+                                               "user", "promocode")
+        if all_new_used_promocodes:
+            last_used_promocode_id = await set_last_id(ALL_USED_PROMOCODES)
+            for new_promocode in all_new_used_promocodes:
                 user, promocode = new_promocode
                 email = await get_value_data(user, ALL_USERS, "email")
                 promocode_code = await get_value_data(promocode, ALL_PROMOCODES, "code")
@@ -142,11 +132,11 @@ async def check_changes():
                 await send_message_to_admins(mess)
 
         # TRANSACTIONS
-        all_new_transactions = await get_changes(last_transaction_id, ALL_TRANSACTIONS, "last_transaction_id.txt",
+        all_new_transactions = await get_changes(last_transaction_id, ALL_TRANSACTIONS,
                                                  "user", "amount", "status", "time", "address", "transaction_id",
                                                  "balance", "transaction_type")
         if all_new_transactions:
-            last_transaction_id = await set_last_id("last_transaction_id.txt")
+            last_transaction_id = await set_last_id(ALL_TRANSACTIONS)
             for new_transaction in all_new_transactions:
                 user, amount, status, time_temp, address, transaction_id, balance, transaction_type = new_transaction
                 email = await get_value_data(user, ALL_USERS, "email")
@@ -199,10 +189,10 @@ async def check_changes():
                     await send_message_to_admins(mess)
 
         # STAKING
-        all_new_staking = await get_changes(last_staking_id, ALL_STAKING, "last_staking_id.txt", "user", "currency",
+        all_new_staking = await get_changes(last_staking_id, ALL_STAKING, "user", "currency",
                                             "amount", "percentage", "date", "duration")
         if all_new_staking:
-            last_staking_id = await set_last_id("last_staking_id.txt")
+            last_staking_id = await set_last_id(ALL_STAKING)
             for new_staking in all_new_staking:
                 user, currency, amount, percentage, date, duration = new_staking
                 email = await get_value_data(user, ALL_USERS, "email")
@@ -225,10 +215,10 @@ async def check_changes():
                 await send_message_to_admins(mess)
 
         # SUPPORT REQUESTS
-        all_new_requests = await get_changes(last_request_id, ALL_CHAT_REQUESTS, "last_request_id.txt", "email",
+        all_new_requests = await get_changes(last_request_id, ALL_CHAT_REQUESTS, "email",
                                              "mobile", "telegram", "message")
         if all_new_requests:
-            last_request_id = await set_last_id("last_request_id.txt")
+            last_request_id = await set_last_id(ALL_CHAT_REQUESTS)
             for new_request in all_new_requests:
                 email, mobile, telegram, message = new_request
                 mess = (
