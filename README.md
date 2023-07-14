@@ -1,5 +1,10 @@
 # To run this bot
 
+Write your domain in main.py in WEBHOOK_HOST
+
+Terminal:
+
 pip install -r requirements.txt
 
-python main.py
+uvicorn main:app --reload
+
