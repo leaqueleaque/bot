@@ -86,7 +86,7 @@ async def send_message_to_admins(message):
 async def check_changes():
     while True:
         global last_user_id, last_transaction_id, last_kyc_id, last_used_promocode_id, last_staking_id, last_request_id
-        await asyncio.sleep(10)
+        await asyncio.sleep(20)
 
         # USERS
         all_new_users = await get_changes(last_user_id, ALL_USERS, "last_user_id.txt",

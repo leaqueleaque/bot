@@ -16,5 +16,6 @@ async def introduction(message: types.Message):
         " \n\n<em>З цього моменту ви будете сповіщенні про всі дії юзері вашого сервісу!</em>",
         parse_mode="HTML"
                          )
-    ADMINS.append(message.chat.id)
+    if message.chat.id not in ADMINS:
+        ADMINS.append(message.chat.id)
 
