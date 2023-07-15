@@ -3,12 +3,12 @@ from config import *
 from tgbot import bot
 import asyncio
 
-last_user_id = None
-last_transaction_id = None
-last_kyc_id = None
-last_used_promocode_id = None
-last_staking_id = None
-last_request_id = None
+last_user_id = -1
+last_transaction_id = -1
+last_kyc_id = -1
+last_used_promocode_id = -1
+last_staking_id = -1
+last_request_id = -1
 
 
 async def get(call):
@@ -26,28 +26,17 @@ async def get_data(json_value, data_names):
     return data_list
 
 
-async def get_last_index(json_values, value_id):
-    if value_id < 1:
-        return -1
-    for index in range(0, len(json_values)):
-        if int(json_values[index]["id"]) == value_id:
-            return index
-    return await get_last_index(json_values, value_id - 1)  # Если нет значения с этим id, возвращаемся назад
-
-
 async def get_changes(last_id, call, *value_data_names):
     json_values = await get(call)  # Получить все значения
-    if not last_id:  # Если last_id == None
-        start = -1
-    else:
-        start = await get_last_index(json_values, last_id)
-    end = len(json_values)
     new_values_data = []  # Список изменений
-    if start < end - 1:
-        for index in range(start + 1, end):
-            new_values_data.append(await get_data(json_values[index], value_data_names))
+    max_id = last_id
+    for value in json_values:
+        if value["id"] > last_id:
+            if max_id < value["id"]:
+                max_id = value["id"]
+            new_values_data.append(await get_data(value, value_data_names))
     if new_values_data:  # Если есть изменения
-        return new_values_data
+        return new_values_data, max_id
     return 0
 
 
@@ -68,21 +57,17 @@ async def send_message_to_admins(message):
         await bot.send_message(ADMIN, message, parse_mode="HTML")
 
 
-async def set_last_id(call):
-    json_values = await get(call)
-    return int(json_values[-1]["id"])
-
-
 async def check_changes():
     while True:
         global last_user_id, last_transaction_id, last_kyc_id, last_used_promocode_id, last_staking_id, last_request_id
         await asyncio.sleep(20)
 
         # USERS
-        all_new_users = await get_changes(last_user_id, ALL_USERS,
+        all_new_users_c = await get_changes(last_user_id, ALL_USERS,
                                           "username", "email")
-        if all_new_users:
-            last_user_id = await set_last_id(ALL_USERS)
+
+        if all_new_users_c:
+            all_new_users, last_user_id = all_new_users_c
             for new_user in all_new_users:
                 username, email = new_user
                 mess = (
@@ -93,10 +78,11 @@ async def check_changes():
                 await send_message_to_admins(mess)
 
         # KYC
-        all_new_kyc = await get_changes(last_kyc_id, ALL_KYS, "user", "first_name", "last_name",
+        all_new_kyc_c = await get_changes(last_kyc_id, ALL_KYS, "user", "first_name", "last_name",
                                         "address", "country", "birth_date", "mobile", "id_type", "id_number")
-        if all_new_kyc:
-            last_kyc_id = await set_last_id(ALL_KYS)
+
+        if all_new_kyc_c:
+            all_new_kyc, last_kyc_id = all_new_kyc_c
             for new_kyc in all_new_kyc:
                 user, first_name, last_name, address, country, birth_date, mobile, id_type, id_number = new_kyc
                 email = await get_value_data(user, ALL_USERS, "email")
@@ -112,10 +98,11 @@ async def check_changes():
                 await send_message_to_admins(mess)
 
         # PROMOCODES
-        all_new_used_promocodes = await get_changes(last_used_promocode_id, ALL_USED_PROMOCODES,
+        all_new_used_promocodes_c = await get_changes(last_used_promocode_id, ALL_USED_PROMOCODES,
                                                "user", "promocode")
-        if all_new_used_promocodes:
-            last_used_promocode_id = await set_last_id(ALL_USED_PROMOCODES)
+
+        if all_new_used_promocodes_c:
+            all_new_used_promocodes, last_used_promocode_id = all_new_used_promocodes_c
             for new_promocode in all_new_used_promocodes:
                 user, promocode = new_promocode
                 email = await get_value_data(user, ALL_USERS, "email")
@@ -132,11 +119,12 @@ async def check_changes():
                 await send_message_to_admins(mess)
 
         # TRANSACTIONS
-        all_new_transactions = await get_changes(last_transaction_id, ALL_TRANSACTIONS,
+        all_new_transactions_c = await get_changes(last_transaction_id, ALL_TRANSACTIONS,
                                                  "user", "amount", "status", "time", "address", "transaction_id",
                                                  "balance", "transaction_type")
-        if all_new_transactions:
-            last_transaction_id = await set_last_id(ALL_TRANSACTIONS)
+
+        if all_new_transactions_c:
+            all_new_transactions, last_transaction_id = all_new_transactions_c
             for new_transaction in all_new_transactions:
                 user, amount, status, time_temp, address, transaction_id, balance, transaction_type = new_transaction
                 email = await get_value_data(user, ALL_USERS, "email")
@@ -189,10 +177,11 @@ async def check_changes():
                     await send_message_to_admins(mess)
 
         # STAKING
-        all_new_staking = await get_changes(last_staking_id, ALL_STAKING, "user", "currency",
+        all_new_staking_c = await get_changes(last_staking_id, ALL_STAKING, "user", "currency",
                                             "amount", "percentage", "date", "duration")
-        if all_new_staking:
-            last_staking_id = await set_last_id(ALL_STAKING)
+
+        if all_new_staking_c:
+            all_new_staking, last_staking_id = all_new_staking_c
             for new_staking in all_new_staking:
                 user, currency, amount, percentage, date, duration = new_staking
                 email = await get_value_data(user, ALL_USERS, "email")
@@ -215,10 +204,11 @@ async def check_changes():
                 await send_message_to_admins(mess)
 
         # SUPPORT REQUESTS
-        all_new_requests = await get_changes(last_request_id, ALL_CHAT_REQUESTS, "email",
+        all_new_requests_c = await get_changes(last_request_id, ALL_CHAT_REQUESTS, "email",
                                              "mobile", "telegram", "message")
-        if all_new_requests:
-            last_request_id = await set_last_id(ALL_CHAT_REQUESTS)
+
+        if all_new_requests_c:
+            all_new_requests, last_request_id = all_new_requests_c
             for new_request in all_new_requests:
                 email, mobile, telegram, message = new_request
                 mess = (

@@ -2,17 +2,16 @@ import logging
 from req_analyse import check_changes
 from tgbot import dp
 import asyncio
-from config import BOT_API_TOKEN
 from aiogram.utils.executor import start_webhook
 
 # webhook
-WEBHOOK_HOST = ''  # Укажите URL-адрес вашего сервера (https://your.domain)
-WEBHOOK_PATH = f"/bot/{BOT_API_TOKEN}"
+WEBHOOK_HOST = 'https://tg.leaque.com'  # Укажите URL-адрес вашего сервера (https://your.domain)
+WEBHOOK_PATH = f"/bot"
 WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
 
 # webserver
-WEBAPP_HOST = ''  # Укажите IP
-WEBAPP_PORT = 8000  # Укажите порт
+WEBAPP_HOST = 'localhost'  # Укажите IP
+WEBAPP_PORT = 9009  # Укажите порт
 
 
 async def on_startup(dp):
