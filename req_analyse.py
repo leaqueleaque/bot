@@ -12,8 +12,14 @@ last_request_id = -1
 
 
 async def get(call):
-    req = requests.get(call)
-    return req.json()
+    try:
+        req = requests.get(call)
+        req = req.json()
+        return req
+    except Exception as exc:
+        print(f"ERROR! Невозможно получить данные по ссылке {call}")
+        print(exc)
+        return None
 
 
 async def get_data(json_value, data_names):
@@ -28,28 +34,37 @@ async def get_data(json_value, data_names):
 
 async def get_changes(last_id, call, *value_data_names):
     json_values = await get(call)  # Получить все значения
-    new_values_data = []  # Список изменений
-    max_id = last_id
-    for value in json_values:
-        if value["id"] > last_id:
-            if max_id < value["id"]:
-                max_id = value["id"]
-            new_values_data.append(await get_data(value, value_data_names))
-    if new_values_data:  # Если есть изменения
-        return new_values_data, max_id
+    if json_values:
+        new_values_data = []  # Список изменений
+        max_id = last_id
+        for value in json_values:
+            if value["id"] > last_id:
+                if max_id < value["id"]:
+                    max_id = value["id"]
+                new_values_data.append(await get_data(value, value_data_names))
+        if new_values_data:  # Если есть изменения
+            return new_values_data, max_id
     return 0
 
 
 async def get_value_data(value_id, call, data_name):
     json_values = await get(call)  # get all values
-    for json_value in json_values:
-        if json_value["id"] == value_id:
-            return json_value[data_name]
+    if json_values:
+        for json_value in json_values:
+            if json_value["id"] == value_id:
+                return json_value[data_name]
+    return None
 
 
 async def get_value_data_by_index(index, call, data_name):
-    json_values = await get(call)  # get all values
-    return json_values[index][data_name]
+    try:
+        json_values = await get(call)  # get all values
+        value_data = json_values[index][data_name]
+        return value_data
+    except Exception as exc:
+        print(f"ERROR! Невозможно получить данные по ссылке {call}")
+        print(exc)
+        return None
 
 
 async def send_message_to_admins(message):
