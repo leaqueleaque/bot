@@ -25,10 +25,15 @@ async def get(call):
 async def get_data(json_value, data_names):
     data_list = []
     for data_name in data_names:
-        if not json_value[data_name]:
-            data_list.append("-")
-        else:
-            data_list.append(json_value[data_name])
+        try:
+            if json_value[data_name]:
+                data_list.append(json_value[data_name])
+            else:
+                data_list.append("-")
+        except Exception as exc:
+            print(f"ERROR! В {json_value} нет данных с названием {data_name}")
+            print(exc)
+            data_list.append("'no data'")
     return data_list
 
 
@@ -78,8 +83,7 @@ async def check_changes():
         await asyncio.sleep(20)
 
         # USERS
-        all_new_users_c = await get_changes(last_user_id, ALL_USERS,
-                                          "username", "email")
+        all_new_users_c = await get_changes(last_user_id, ALL_USERS, "username", "email")
 
         if all_new_users_c:
             all_new_users, last_user_id = all_new_users_c
@@ -135,22 +139,21 @@ async def check_changes():
 
         # TRANSACTIONS
         all_new_transactions_c = await get_changes(last_transaction_id, ALL_TRANSACTIONS,
-                                                 "user", "amount", "status", "time", "address", "transaction_id",
-                                                 "balance", "transaction_type")
+                                                 "user", "amount", "status", "time_of_transaction", "address", "date",
+                                                 "transaction_id", "balance", "transaction_type")
 
         if all_new_transactions_c:
             all_new_transactions, last_transaction_id = all_new_transactions_c
             for new_transaction in all_new_transactions:
-                user, amount, status, time_temp, address, transaction_id, balance, transaction_type = new_transaction
+                user, amount, status, time, address, date, transaction_id, balance, transaction_type = new_transaction
                 email = await get_value_data(user, ALL_USERS, "email")
-                time = time_temp[:8]
 
                 # DEPOSIT
                 if transaction_type == "Deposit":
                     mess = (
                         f"🔔 <b>НОВИЙ ДЕПОЗИТ</b> 🔔\n\n👤 <b>Юзер:</b> {email}\n💰 <b>Сума:</b>"
                         f" {amount}\n✅ <b>Статус:</b> {status}\n🕒 <b>Час:</b> "
-                        f"{time}\n\n🛜 <em>Будь ласка перевірте ваш гаманець!</em>"
+                        f"{time} {date}\n\n🛜 <em>Будь ласка перевірте ваш гаманець!</em>"
                     )
                     await send_message_to_admins(mess)
 
@@ -161,7 +164,7 @@ async def check_changes():
                     mess = (
                         f"🔔 <b>НОВИЙ ТРАНСФЕР</b> 🔔\n\n🆔 {transaction_id}\n👤 <b>Відправник:</b> "
                         f"{email}\n👤 <b>Отримувач:</b> {address}\n💰 <b>Сума:</b> {amount}\n✅ "
-                        f"<b>Статус:</b> {status}\n🕒 <b>Час:</b> {time}\n\n🛜 "
+                        f"<b>Статус:</b> {status}\n🕒 <b>Час:</b> {time} {date}\n\n🛜 "
                         f"<em>Перегляньте подробиці в адмінпанелі за <a href="
                         f"\"https://leaque.com/api/admin/transactions/transaction/\">посиланням</a>"
                         f"</em>"
@@ -173,7 +176,7 @@ async def check_changes():
                     mess = (
                         f"🔔 <b>НОВИЙ СВАП</b> 🔔\n\n👤 <b>Юзер:</b> {email}\n💰 <b>Сума:</b>"
                         f" {amount}\n💰 <b>Отримав:</b> {balance}\n✅ <b>Статус:</b> {status}\n"
-                        f"🕒 <b>Час:</b> {time}\n\n🛜 <em>Перегляньте подробиці в адмінпанелі за "
+                        f"🕒 <b>Час:</b> {time} {date}\n\n🛜 <em>Перегляньте подробиці в адмінпанелі за "
                         f"<a href=\"https://leaque.com/api/admin/transactions/transaction/\">"
                         f"посиланням</a></em>"
                     )
@@ -184,7 +187,7 @@ async def check_changes():
                     mess = (
                         f"🔔 <b>НОВИЙ ЗАПИТ НА ВИВЕДЕННЯ КОШТІВ</b> 🔔\n\n👤 <b>Юзер:</b> {email}"
                         f"\n👤 <b>Гаманець:</b> {address}\n💰 <b>Сума:</b> {amount}\n✅ "
-                        f"<b>Статус:</b> {status}\n🕒 <b>Час:</b> {time}\n\n🛜 <em>Перегляньте "
+                        f"<b>Статус:</b> {status}\n🕒 <b>Час:</b> {time} {date}\n\n🛜 <em>Перегляньте "
                         f"подробиці в адмінпанелі за "
                         f"<a href=\"https://leaque.com/api/admin/transactions/withdraw/\">"
                         f"посиланням</a></em>"
