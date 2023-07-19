@@ -13,8 +13,7 @@ last_request_id = -1
 
 async def get(call):
     try:
-        req = requests.get(call)
-        req = req.json()
+        req = requests.get(call).json()
         return req
     except Exception as exc:
         print(f"ERROR! Невозможно получить данные по ссылке {call}")
@@ -67,7 +66,7 @@ async def get_value_data_by_index(index, call, data_name):
         value_data = json_values[index][data_name]
         return value_data
     except Exception as exc:
-        print(f"ERROR! Невозможно получить данные по ссылке {call}")
+        print(f"ERROR! Невозможно получить данные по индексу {index} по ссылке {call}")
         print(exc)
         return None
 
@@ -196,26 +195,26 @@ async def check_changes():
 
         # STAKING
         all_new_staking_c = await get_changes(last_staking_id, ALL_STAKING, "user", "currency",
-                                            "amount", "percentage", "date", "duration")
+                                              "amount", "percentage", "date_start", "date_expiration", "days")
 
         if all_new_staking_c:
             all_new_staking, last_staking_id = all_new_staking_c
             for new_staking in all_new_staking:
-                user, currency, amount, percentage, date, duration = new_staking
+                user, currency, amount, percentage, date_start, date_expiration, duration = new_staking
                 email = await get_value_data(user, ALL_USERS, "email")
-                staking_currency = await get_value_data_by_index(currency, CRYPTO_CURRENCY, "index")
-                duration = duration.split(" ")[0]
-                if duration[-1] == '1':
+                currency_index = currency["index"]
+                duration = str(duration)
+                if duration == '1':
                     duration += " день"
-                elif duration[-1] == '2' or duration[-1] == '3' or duration[-1] == '4':
+                elif duration == '2' or duration == '3' or duration == '4':
                     duration += " дні"
                 else:
                     duration += " днів"
                 mess = (
                     f"🔔 <b>НОВИЙ СТЕЙКІНГ</b> 🔔\n\n👤 <b>Юзер:</b> {email}"
-                    f"\n🔘 <b>Монета:</b> {staking_currency}\n💰 <b>Сума:</b> {amount}\n💰 <b>Процент:</b> "
-                    f"{percentage}%\n🗓️ <b>Дата старта:</b> {date}\n🗓️ <b>Тривалість:</b> {duration}\n\n🛜 <em>"
-                    f"Перегляньте подробиці в адмінпанелі за "
+                    f"\n🔘 <b>Монета:</b> {currency_index}\n💰 <b>Сума:</b> {amount}\n💰 <b>Процент:</b> "
+                    f"{percentage}%\n🗓️ <b>Дата старта:</b> {date_start}\n🗓️ <b>Дата завершення:</b> {date_expiration}"
+                    f"\n🗓️ <b>Тривалість:</b> {duration}\n\n🛜 <em>Перегляньте подробиці в адмінпанелі за "
                     f"<a href=\"https://leaque.com/api/admin/transactions/staking/\">"
                     f"посиланням</a></em>"
                 )
