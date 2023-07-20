@@ -195,26 +195,19 @@ async def check_changes():
 
         # STAKING
         all_new_staking_c = await get_changes(last_staking_id, ALL_STAKING, "user", "currency",
-                                              "amount", "percentage", "date_start", "date_expiration", "days")
+                                              "amount", "percentage", "date_start", "date_expiration")
 
         if all_new_staking_c:
             all_new_staking, last_staking_id = all_new_staking_c
             for new_staking in all_new_staking:
-                user, currency, amount, percentage, date_start, date_expiration, duration = new_staking
+                user, currency, amount, percentage, date_start, date_expiration = new_staking
                 email = await get_value_data(user, ALL_USERS, "email")
                 currency_index = currency["index"]
-                duration = str(duration)
-                if duration == '1':
-                    duration += " день"
-                elif duration == '2' or duration == '3' or duration == '4':
-                    duration += " дні"
-                else:
-                    duration += " днів"
                 mess = (
                     f"🔔 <b>НОВИЙ СТЕЙКІНГ</b> 🔔\n\n👤 <b>Юзер:</b> {email}"
                     f"\n🔘 <b>Монета:</b> {currency_index}\n💰 <b>Сума:</b> {amount}\n💰 <b>Процент:</b> "
                     f"{percentage}%\n🗓️ <b>Дата старта:</b> {date_start}\n🗓️ <b>Дата завершення:</b> {date_expiration}"
-                    f"\n🗓️ <b>Тривалість:</b> {duration}\n\n🛜 <em>Перегляньте подробиці в адмінпанелі за "
+                    f"\n\n🛜 <em>Перегляньте подробиці в адмінпанелі за "
                     f"<a href=\"https://leaque.com/api/admin/transactions/staking/\">"
                     f"посиланням</a></em>"
                 )
@@ -228,6 +221,12 @@ async def check_changes():
             all_new_requests, last_request_id = all_new_requests_c
             for new_request in all_new_requests:
                 email, mobile, telegram, message = new_request
+                if "+" in mobile:
+                    mobile_temp = mobile[2:]
+                else:
+                    mobile_temp = mobile
+                if not mobile_temp.isdigit():
+                    mobile = "-"
                 mess = (
                     f"🔔 <b>НОВИЙ ЗАПИТ У SUPPORT</b> 🔔\n\n👤 <b>Пошта:</b> {email}\n👤 <b>Телефон:</b> "
                     f"{mobile}\n👤 <b>Телеграм:</b> {telegram}\n✉️ <b>Повідомлення:</b> {message}\n\n🛜 <em>"
