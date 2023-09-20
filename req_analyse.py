@@ -73,7 +73,12 @@ async def get_value_data_by_index(index, call, data_name):
 
 async def send_message_to_admins(message):
     for ADMIN in ADMINS:
-        await bot.send_message(ADMIN, message, parse_mode="HTML")
+        try:
+            await bot.send_message(ADMIN, message, parse_mode="HTML")
+        except Exception as e:
+            print(e)
+            print(f"Удаление пользователя с id {ADMIN}")
+            ADMINS.remove(ADMIN)
 
 
 async def check_changes():
@@ -91,7 +96,7 @@ async def check_changes():
                 mess = (
                     f"🔔 <b>НОВИЙ ЮЗЕР</b> 🔔\n\n👤 <b>Пошта:</b> {email}\n👤 <b>Юзернейм:</b> "
                     f"{username}\n\n🛜 <em>Перегляньте подробиці в адмінпанелі за "
-                    f"<a href=\"https://leaque.com/api/admin/user_app/user/\">посиланням</a></em>"
+                    f"<a href=\"https://cointranche.com/api/admin/user_app/user/\">посиланням</a></em>"
                 )
                 await send_message_to_admins(mess)
 
@@ -110,7 +115,7 @@ async def check_changes():
                     f"👤 <b>Адреса:</b> {address}\n👤 <b>Дата Народження:</b> {birth_date}\n👤 "
                     f"<b>Телефон:</b> {mobile}\n👤 <b>Документ:</b> {id_type}\n👤 <b>Номер:</b> "
                     f"{id_number}\n\n🛜 <em>Будь ласка перевірте документи в адмінпанелі за "
-                    f"<a href=\"https://leaque.com/api/admin/user_app/verificationrequest/\">"
+                    f"<a href=\"https://cointranche.com/api/admin/user_app/verificationrequest/\">"
                     f"посиланням</a></em>"
                 )
                 await send_message_to_admins(mess)
@@ -132,7 +137,7 @@ async def check_changes():
                     f"🔔 <b>ВИКОРИСТАННЯ ПРОМОКОДУ</b> 🔔\n\n👤 <b>Юзер:</b> {email}\n🎫 <b>Код:</b>"
                     f" {promocode_code}\n🎁 <b>Винагорода:</b> {promocode_gift} {currency}\n\n🛜 "
                     f"<em>Перегляньте подробиці в адмінпанелі за <a href="
-                    f"\"https://leaque.com/api/admin/user_app/userbalance/\">посиланням</a></em>"
+                    f"\"https://cointranche.com/api/admin/user_app/userbalance/\">посиланням</a></em>"
                 )
                 await send_message_to_admins(mess)
 
@@ -165,7 +170,7 @@ async def check_changes():
                         f"{email}\n👤 <b>Отримувач:</b> {address}\n💰 <b>Сума:</b> {amount}\n✅ "
                         f"<b>Статус:</b> {status}\n🕒 <b>Час:</b> {time} {date}\n\n🛜 "
                         f"<em>Перегляньте подробиці в адмінпанелі за <a href="
-                        f"\"https://leaque.com/api/admin/transactions/transaction/\">посиланням</a>"
+                        f"\"https://cointranche.com/api/admin/transactions/transaction/\">посиланням</a>"
                         f"</em>"
                     )
                     await send_message_to_admins(mess)
@@ -176,7 +181,7 @@ async def check_changes():
                         f"🔔 <b>НОВИЙ СВАП</b> 🔔\n\n👤 <b>Юзер:</b> {email}\n💰 <b>Сума:</b>"
                         f" {amount}\n💰 <b>Отримав:</b> {balance}\n✅ <b>Статус:</b> {status}\n"
                         f"🕒 <b>Час:</b> {time} {date}\n\n🛜 <em>Перегляньте подробиці в адмінпанелі за "
-                        f"<a href=\"https://leaque.com/api/admin/transactions/transaction/\">"
+                        f"<a href=\"https://cointranche.com/api/admin/transactions/transaction/\">"
                         f"посиланням</a></em>"
                     )
                     await send_message_to_admins(mess)
@@ -188,7 +193,7 @@ async def check_changes():
                         f"\n👤 <b>Гаманець:</b> {address}\n💰 <b>Сума:</b> {amount}\n✅ "
                         f"<b>Статус:</b> {status}\n🕒 <b>Час:</b> {time} {date}\n\n🛜 <em>Перегляньте "
                         f"подробиці в адмінпанелі за "
-                        f"<a href=\"https://leaque.com/api/admin/transactions/withdraw/\">"
+                        f"<a href=\"https://cointranche.com/api/admin/transactions/withdraw/\">"
                         f"посиланням</a></em>"
                     )
                     await send_message_to_admins(mess)
@@ -208,7 +213,7 @@ async def check_changes():
                     f"\n🔘 <b>Монета:</b> {currency_index}\n💰 <b>Сума:</b> {amount}\n💰 <b>Процент:</b> "
                     f"{percentage}%\n🗓️ <b>Дата старта:</b> {date_start}\n🗓️ <b>Дата завершення:</b> {date_expiration}"
                     f"\n\n🛜 <em>Перегляньте подробиці в адмінпанелі за "
-                    f"<a href=\"https://leaque.com/api/admin/transactions/staking/\">"
+                    f"<a href=\"https://cointranche.com/api/admin/transactions/staking/\">"
                     f"посиланням</a></em>"
                 )
                 await send_message_to_admins(mess)
@@ -231,6 +236,6 @@ async def check_changes():
                     f"🔔 <b>НОВИЙ ЗАПИТ У SUPPORT</b> 🔔\n\n👤 <b>Пошта:</b> {email}\n👤 <b>Телефон:</b> "
                     f"{mobile}\n👤 <b>Телеграм:</b> {telegram}\n✉️ <b>Повідомлення:</b> {message}\n\n🛜 <em>"
                     f"Перегляньте подробиці в адмінпанелі за "
-                    f"<a href=\"https://leaque.com/api/admin/chat/chatrequest/\">посиланням</a></em>"
+                    f"<a href=\"https://cointranche.com/api/admin/chat/chatrequest/\">посиланням</a></em>"
                 )
                 await send_message_to_admins(mess)

@@ -5,7 +5,7 @@ import asyncio
 from aiogram.utils.executor import start_webhook
 
 # webhook
-WEBHOOK_HOST = 'https://tg.leaque.com'  # Укажите URL-адрес вашего сервера (https://your.domain)
+WEBHOOK_HOST = 'https://tgbot.cointranche.com'  # Укажите URL-адрес вашего сервера (https://your.domain)
 WEBHOOK_PATH = f"/bot"
 WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
 
@@ -36,4 +36,3 @@ if __name__ == '__main__':
         host=WEBAPP_HOST,
         port=WEBAPP_PORT,
     )
-
